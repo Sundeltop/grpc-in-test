@@ -42,7 +42,7 @@ public class GreeterServiceImpl extends GreeterServiceGrpc.GreeterServiceImplBas
     }
 
     @Override
-    public StreamObserver<HelloRequest> sayHelloToUsers(StreamObserver<HelloResponse> responseObserver) {
+    public StreamObserver<HelloRequest> saySeparateHelloToUsers(StreamObserver<HelloResponse> responseObserver) {
         return new StreamObserver<>() {
             @Override
             public void onNext(HelloRequest request) {

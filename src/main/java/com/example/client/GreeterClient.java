@@ -60,7 +60,7 @@ public class GreeterClient {
 
         final StreamObserver<HelloRequest> observer = stub
                 .withDeadlineAfter(5, SECONDS)
-                .sayHelloToUsers(new StreamObserver<>() {
+                .saySeparateHelloToUsers(new StreamObserver<>() {
                     @Override
                     public void onNext(HelloResponse helloResponse) {
                         responses.add(helloResponse);

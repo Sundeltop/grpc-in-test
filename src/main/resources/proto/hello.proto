@@ -11,8 +11,11 @@ service GreeterService {
   // Server Streaming
   rpc SayMultipleHelloToUser (HelloRequest) returns (stream HelloResponse);
 
+  // Client Streaming
+  rpc SayJoinedHelloToUsers (stream HelloRequest) returns (HelloResponse);
+
   // Bidirectional Streaming
-  rpc SayHelloToUsers (stream HelloRequest) returns (stream HelloResponse);
+  rpc SaySeparateHelloToUsers (stream HelloRequest) returns (stream HelloResponse);
 }
 
 message HelloRequest {
