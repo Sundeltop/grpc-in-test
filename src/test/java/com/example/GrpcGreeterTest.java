@@ -8,6 +8,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -29,9 +31,23 @@ public class GrpcGreeterTest {
 
     @Test
     void verifyUnaryGreetUser() {
-        final String expectedUser = faker.name().firstName();
+        final String user = faker.name().firstName();
 
-        assertThat(client.greet(expectedUser)).isEqualTo("Hello %s".formatted(expectedUser));
+        final String expectedGreeting = "Hello %s".formatted(user);
+
+        assertThat(client.greetUser(user)).isEqualTo(expectedGreeting);
+    }
+
+    @Test
+    void verifyServerStreamingMultipleGreetUser() {
+        final String user = faker.name().firstName();
+
+        final List<String> expectedGreetings = List.of(
+                "Hello %s".formatted(user),
+                "Hello again %s".formatted(user)
+        );
+
+        assertThat(client.multipleGreetUser(user)).isEqualTo(expectedGreetings);
     }
 
     @AfterAll

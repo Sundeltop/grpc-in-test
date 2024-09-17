@@ -1,13 +1,21 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-
-package com.example;
+option java_package = "com.example";
 
 service GreeterService {
 
   // Unary
-  rpc SayHello(HelloRequest) returns (HelloResponse);
+  rpc SayHelloToUser (HelloRequest) returns (HelloResponse);
+
+  // Client Streaming
+  rpc SayHelloToUsers (stream HelloRequest) returns (HelloResponse);
+
+  // Server Streaming
+  rpc SayMultipleHelloToUser (HelloRequest) returns (stream HelloResponse);
+
+  // Bidirectional Streaming
+  rpc SayMultipleHelloToUsers (stream HelloRequest) returns (stream HelloResponse);
 }
 
 message HelloRequest {
