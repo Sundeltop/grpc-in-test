@@ -57,7 +57,7 @@ public class GrpcGreeterTest {
         final String secondUser = faker.name().firstName();
 
         final String expectedGreeting = "Hello %s".formatted(
-                String.join(",", firstUser, secondUser));
+                String.join(", ", firstUser, secondUser));
 
         assertThat(client.joinedGreetUsers(firstUser, secondUser)).isEqualTo(expectedGreeting);
     }
