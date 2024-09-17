@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,6 +49,18 @@ public class GrpcGreeterTest {
         );
 
         assertThat(client.multipleGreetUser(user)).isEqualTo(expectedGreetings);
+    }
+
+    @Test
+    void verifyBidirectionalStreamingGreetUsers() {
+        final String firstUser = faker.name().firstName();
+        final String secondUser = faker.name().firstName();
+
+        final List<String> expectedGreetings = Stream.of(firstUser, secondUser)
+                .map("Hello %s"::formatted)
+                .toList();
+
+        assertThat(client.greetUsers(firstUser, secondUser)).isEqualTo(expectedGreetings);
     }
 
     @AfterAll
