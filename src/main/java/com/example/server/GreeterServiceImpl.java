@@ -8,6 +8,9 @@ import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 import java.time.Duration;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
 import static java.time.Duration.ofSeconds;
@@ -42,8 +45,41 @@ public class GreeterServiceImpl extends GreeterServiceGrpc.GreeterServiceImplBas
     }
 
     @Override
+    public StreamObserver<HelloRequest> sayJoinedHelloToUsers(StreamObserver<HelloResponse> responseObserver) {
+        return new StreamObserver<>() {
+            final Queue<HelloRequest> requests = new ConcurrentLinkedQueue<>();
+
+            @Override
+            public void onNext(HelloRequest request) {
+                requests.add(request);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                log.error(throwable);
+                responseObserver.onError(throwable);
+            }
+
+            @Override
+            public void onCompleted() {
+                final String joinedNames = requests
+                        .stream()
+                        .map(HelloRequest::getName)
+                        .collect(Collectors.joining(", "));
+
+                final HelloResponse response = buildHelloResponse("Hello %s".formatted(joinedNames));
+
+                log.info("Produce response: '{}'", response.getMessage());
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+            }
+        };
+    }
+
+    @Override
     public StreamObserver<HelloRequest> saySeparateHelloToUsers(StreamObserver<HelloResponse> responseObserver) {
         return new StreamObserver<>() {
+
             @Override
             public void onNext(HelloRequest request) {
                 final HelloResponse response = buildHelloResponse("Hello %s".formatted(request.getName()));

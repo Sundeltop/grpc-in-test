@@ -52,6 +52,17 @@ public class GrpcGreeterTest {
     }
 
     @Test
+    void verifyClientStreamingGreetMultipleUsers() {
+        final String firstUser = faker.name().firstName();
+        final String secondUser = faker.name().firstName();
+
+        final String expectedGreeting = "Hello %s".formatted(
+                String.join(",", firstUser, secondUser));
+
+        assertThat(client.joinedGreetUsers(firstUser, secondUser)).isEqualTo(expectedGreeting);
+    }
+
+    @Test
     void verifyBidirectionalStreamingGreetUsers() {
         final String firstUser = faker.name().firstName();
         final String secondUser = faker.name().firstName();
@@ -60,7 +71,7 @@ public class GrpcGreeterTest {
                 .map("Hello %s"::formatted)
                 .toList();
 
-        assertThat(client.greetUsers(firstUser, secondUser)).isEqualTo(expectedGreetings);
+        assertThat(client.separateGreetUsers(firstUser, secondUser)).isEqualTo(expectedGreetings);
     }
 
     @AfterAll

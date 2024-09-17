@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static java.lang.Thread.sleep;
@@ -48,19 +49,55 @@ public class GreeterClient {
                 .toList();
     }
 
-    @SneakyThrows
-    public List<String> greetUsers(String... users) {
-        final ConcurrentLinkedQueue<HelloRequest> requests = Arrays.stream(users)
+    public String joinedGreetUsers(String... users) {
+        final Queue<HelloResponse> responses = new ConcurrentLinkedQueue<>();
+        final AtomicBoolean isCompleted = new AtomicBoolean(false);
+
+        final StreamObserver<HelloRequest> observer = stub
+                .withDeadlineAfter(5, SECONDS)
+                .sayJoinedHelloToUsers(new StreamObserver<>() {
+
+                    @Override
+                    public void onNext(HelloResponse helloResponse) {
+                        responses.add(helloResponse);
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                    }
+
+                    @Override
+                    public void onCompleted() {
+                        isCompleted.set(true);
+                    }
+                });
+
+        Arrays.stream(users)
                 .map(user -> HelloRequest.newBuilder()
                         .setName(user)
                         .build())
-                .collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+                .collect(Collectors.toCollection(ConcurrentLinkedQueue::new))
+                .forEach(observer::onNext);
 
+        observer.onCompleted();
+
+        while (!isCompleted.get()) {
+        }
+
+        return responses
+                .stream()
+                .map(HelloResponse::getMessage)
+                .findFirst()
+                .orElseThrow();
+    }
+
+    public List<String> separateGreetUsers(String... users) {
         final Queue<HelloResponse> responses = new ConcurrentLinkedQueue<>();
 
         final StreamObserver<HelloRequest> observer = stub
                 .withDeadlineAfter(5, SECONDS)
                 .saySeparateHelloToUsers(new StreamObserver<>() {
+
                     @Override
                     public void onNext(HelloResponse helloResponse) {
                         responses.add(helloResponse);
@@ -75,10 +112,16 @@ public class GreeterClient {
                     }
                 });
 
-        requests.forEach(request -> {
-            observer.onNext(request);
-            waitFor(ofSeconds(1));
-        });
+        Arrays.stream(users)
+                .map(user -> HelloRequest.newBuilder()
+                        .setName(user)
+                        .build())
+                .collect(Collectors.toCollection(ConcurrentLinkedQueue::new))
+                .forEach(request -> {
+                    observer.onNext(request);
+                    waitFor(ofSeconds(1));
+                });
+
         observer.onCompleted();
 
         return responses
