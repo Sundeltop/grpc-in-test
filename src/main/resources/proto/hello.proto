@@ -8,14 +8,8 @@ service GreeterService {
   // Unary
   rpc SayHelloToUser (HelloRequest) returns (HelloResponse);
 
-  // Client Streaming
-  rpc SayHelloToUsers (stream HelloRequest) returns (HelloResponse);
-
   // Server Streaming
   rpc SayMultipleHelloToUser (HelloRequest) returns (stream HelloResponse);
-
-  // Bidirectional Streaming
-  rpc SayMultipleHelloToUsers (stream HelloRequest) returns (stream HelloResponse);
 }
 
 message HelloRequest {
